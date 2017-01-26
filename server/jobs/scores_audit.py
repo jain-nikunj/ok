@@ -4,7 +4,7 @@ from server import jobs
 from server.models import Assignment, Score, db
 
 @jobs.background_job
-def audit_missing_scores(assign_id, omit_details=('autograder', 'regrade')):
+def audit_missing_scores(assign_id, omit_tags=()):
     logger = jobs.get_job_logger()
 
     assignment = Assignment.query.get(assign_id)
@@ -19,7 +19,7 @@ def audit_missing_scores(assign_id, omit_details=('autograder', 'regrade')):
     logger.info('Students without submissions: {}'.format(len(students_without_subms)))
 
     query = (Score.query.options(db.joinedload('backup'))
-                  .filter_by(assignment=assignment, archived=False))
+                        .filter_by(assignment=assignment, archived=False))
 
     has_scores = defaultdict(set)
 
@@ -37,6 +37,6 @@ def audit_missing_scores(assign_id, omit_details=('autograder', 'regrade')):
         logger.info("Number of students without {} scores is {}".format(score_kind,
                                                                         len(difference)))
 
-        if difference and score_kind not in omit_details:
-            logger.info("Students without {} scores: {}".format(score_kind, ', '.join(difference)))
+        if difference and score_kind not in omit_tags:
+            logger.info("Students without {} scores: {}".format(score_kind, '\n '.join(difference)))
         logger.info("---"*20)
