@@ -4,7 +4,7 @@ from server import jobs
 from server.models import Assignment, Score, db
 
 @jobs.background_job
-def audit_missing_scores(assign_id, omit_tags=()):
+def audit_missing_scores(assign_id):
     logger = jobs.get_job_logger()
 
     assignment = Assignment.query.get(assign_id)
@@ -37,6 +37,6 @@ def audit_missing_scores(assign_id, omit_tags=()):
         logger.info("Number of students without {} scores is {}".format(score_kind,
                                                                         len(difference)))
 
-        if difference and score_kind not in omit_tags:
+        if difference:
             logger.info("Students without {} scores: {}".format(score_kind, '\n '.join(difference)))
         logger.info("---"*20)
