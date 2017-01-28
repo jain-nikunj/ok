@@ -1,6 +1,6 @@
 FROM python:3.5-alpine
 
-RUN apk add --update patch ca-certificates nginx perl;
+RUN apk add --update patch ca-certificates nginx perl build-base linux-headers pcre-dev uwsgi;
 
 RUN mkdir /code/
 WORKDIR /code/
@@ -16,12 +16,7 @@ RUN mv docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 RUN ./manage.py assets build
 
 CMD nginx && \
-    env PYTHONPATH=$PYTHONPATH:$PWD gunicorn \
-        --logger-class server.logging.gunicorn.Logger \
-        --timeout 45 \
-        --bind unix:/tmp/server.sock \
-        --workers 3 \
-        wsgi:app
+	uwsgi --ini /code/uwsgi.ini
 
 RUN rm -rf /var/cache/apk/*
 
